@@ -1,0 +1,1 @@
+About to SQL inject'); INSERT INTO restaurant(id, name, address, typeid) values((SELECT ISNULL(MAX(id) + 1, 1) FROM restaurant), 'Restoran Milos', 'Adresa Milos', (SELECT MAX(id) FROM restaurant_type)); INSERT INTO food(id, name, price, restaurantId) values((SELECT ISNULL(MAX(id) + 1, 1) FROM food), 'Milos Food', 10, (SELECT MAX(id) FROM restaurant)); --

@@ -4,10 +4,7 @@ import com.zuehlke.securesoftwaredevelopment.domain.*;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,14 +45,21 @@ public class OrderRepository {
     public void insertNewOrder(NewOrder newOrder, int userId) {
         LocalDate date = LocalDate.now();
         String sqlQuery = "INSERT INTO delivery (isDone, userId, restaurantId, addressId, date, comment)" +
-                "values (FALSE, " + userId + ", " + newOrder.getRestaurantId() + ", " + newOrder.getAddress() + "," +
-                "'" + date.getYear() + "-" + date.getMonthValue() + "-" + date.getDayOfMonth() + "', '" + newOrder.getComment() + "')";
+                "values (FALSE, " + userId + ", ?, ?, " +
+                "'" + date.getYear() + "-" + date.getMonthValue() + "-" + date.getDayOfMonth() + "', ?)";
         try {
             Connection connection = dataSource.getConnection();
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(sqlQuery);
+
+            // Create the prepared statement to mitigate SQL injection
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+            preparedStatement.setInt(1, newOrder.getRestaurantId());
+            preparedStatement.setInt(2, newOrder.getAddress());
+            preparedStatement.setString(3, newOrder.getComment());
+
+            preparedStatement.executeUpdate();
 
             sqlQuery = "SELECT MAX(id) FROM delivery";
+            Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(sqlQuery);
 
             if (rs.next()) {

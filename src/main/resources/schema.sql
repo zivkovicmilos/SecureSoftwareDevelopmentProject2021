@@ -2,6 +2,9 @@ drop table if exists users;
 drop table if exists person;
 drop table if exists cars;
 drop table if exists comments;
+drop table if exists restaurant;
+drop table if exists restaurant_type;
+drop table if exists food;
 
 create table users
 (
