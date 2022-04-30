@@ -8,53 +8,53 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Deliveries</title>
     <script>
-        function search() {
-            clearSearchResults();
-            const searchQuery = getSearchQuery();
-            updateSearchTerm(searchQuery);
-            fetch(`/api/deliveries/search?query=${searchQuery}`)
-                .then(response => response.json())
-                .then(updateSearchResults);
+      function search() {
+        clearSearchResults();
+        const searchQuery = getSearchQuery();
+        updateSearchTerm(searchQuery);
+        fetch(`/api/deliveries/search?query=${searchQuery}`)
+          .then(response => response.json())
+          .then(updateSearchResults);
+      }
+
+      function clearSearchResults() {
+        const table = document.querySelector('table');
+        while (table.rows.length > 1) {
+          table.deleteRow(1);
         }
+      }
 
-        function clearSearchResults() {
-            const table = document.querySelector('table');
-            while (table.rows.length > 1) {
-                table.deleteRow(1);
-            }
-        }
+      function getSearchQuery() {
+        return document.getElementById('searchQuery').value;
+      }
 
-        function getSearchQuery() {
-            return document.getElementById('searchQuery').value;
-        }
+      function updateSearchTerm(searchQuery) {
+        const searchTerm = document.getElementById('searchTerm');
+        searchTerm.textContent = searchQuery;
+        searchTerm.parentElement.classList.remove('invisible');
+      }
 
-        function updateSearchTerm(searchQuery) {
-            const searchTerm = document.getElementById('searchTerm');
-            searchTerm.innerHTML = searchQuery;
-            searchTerm.parentElement.classList.remove('invisible');
-        }
+      function updateSearchResults(deliveries) {
+        deliveries.forEach(addRow);
+      }
 
-        function updateSearchResults(deliveries) {
-            deliveries.forEach(addRow);
-        }
+      function addRow(delivery) {
+        const template = document.getElementById('row-template');
+        const row = document.importNode(template.content, true);
+        const tds = row.querySelectorAll('td');
 
-        function addRow(delivery) {
-            const template = document.getElementById('row-template');
-            const row = document.importNode(template.content, true);
-            const tds = row.querySelectorAll('td');
+        tds[0].textContent = delivery.id;
+        tds[1].textContent = delivery.done ? 'Delivered' : 'Not delivered';
+        tds[2].textContent = delivery.date;
+        tds[3].textContent = delivery.username;
+        tds[4].textContent = delivery.restaurantName;
+        tds[5].textContent = delivery.restaurantType;
+        tds[6].textContent = delivery.address;
+        tds[7].innerHTML = `<a href="/delivery?id=${delivery.id}">Details</a>`;
 
-            tds[0].textContent = delivery.id;
-            tds[1].textContent = delivery.done? 'Delivered' : 'Not delivered';
-            tds[2].textContent = delivery.date;
-            tds[3].textContent = delivery.username;
-            tds[4].textContent = delivery.restaurantName;
-            tds[5].textContent = delivery.restaurantType;
-            tds[6].textContent = delivery.address;
-            tds[7].innerHTML = `<a href="/delivery?id=${delivery.id}">Details</a>`;
-
-            const tbody = document.querySelector('tbody');
-            tbody.appendChild(row);
-        }
+        const tbody = document.querySelector('tbody');
+        tbody.appendChild(row);
+      }
 
     </script>
 </head>
