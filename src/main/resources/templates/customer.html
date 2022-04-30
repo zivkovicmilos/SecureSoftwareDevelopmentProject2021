@@ -9,21 +9,21 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Deliveries</title>
     <script>
-        function deleteCustomer(customerId) {
-            fetch('/customer?id=' + customerId, {
-                method: 'DELETE'
-            }).then(function () {
-                window.location.href = '/customers-and-restaurants';
-            });
-        }
+      function deleteCustomer(customerId) {
+        fetch('/customer?id=' + customerId, {
+          method: 'DELETE'
+        }).then(function () {
+          window.location.href = '/customers-and-restaurants';
+        });
+      }
 
-        function deleteAddress(addressId) {
-            fetch('/customer/address?id=' + addressId, {
-                method: 'DELETE'
-            }).then(function () {
-                window.location.href = '';
-            });
-        }
+      function deleteAddress(addressId) {
+        fetch('/customer/address?id=' + addressId, {
+          method: 'DELETE'
+        }).then(function () {
+          window.location.href = '';
+        });
+      }
     </script>
 </head>
 <body>
@@ -40,6 +40,7 @@
                 <input type="text" name="password" class="form-control" id="password" th:value="${customer.password}">
             </div>
             <input type="hidden" name="id" class="form-control" id="id" th:value="${customer.id}">
+            <input type="hidden" name="CSRFToken" id="CSRFToken" th:value="${TOKEN}">
             <button type="submit" class="btn btn-primary">Save</button>
         </form>
     </div>
@@ -57,6 +58,7 @@
             <form method="POST" action="/api/customer/address/update-address" class="col-5">
                 <td><input name="name" th:value="${address.name}"/>
                     <input type="hidden" name="id" th:value="${address.id}"/></td>
+                <input type="hidden" name="CSRFToken" th:value="${TOKEN}">
                 <td>
                     <button class="btn btn-primary">Save</button>
                 </td>
@@ -72,6 +74,7 @@
             <tr>
                 <td><input name="name"></td>
                 <input type="hidden" name="userId" th:value="${customer.id}"/></td>
+                <input type="hidden" name="CSRFToken" th:value="${TOKEN}">
                 <td>
                     <button class="btn btn-primary">Save</button>
                 </td>
