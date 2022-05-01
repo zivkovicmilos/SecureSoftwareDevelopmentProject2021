@@ -5,6 +5,10 @@ drop table if exists comments;
 drop table if exists restaurant;
 drop table if exists restaurant_type;
 drop table if exists food;
+drop table if exists roles;
+drop table if exists user_to_roles;
+drop table if exists premissions;
+drop table if exists role_to_permissions;
 
 create table users
 (
