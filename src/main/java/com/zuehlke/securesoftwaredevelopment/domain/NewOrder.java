@@ -8,7 +8,7 @@ public class NewOrder {
     FoodItem[] items;
 
 
-    public NewOrder(Integer restaurantId, String comment,  Integer address, FoodItem[] items) {
+    public NewOrder(Integer restaurantId, String comment, Integer address, FoodItem[] items) {
         this.restaurantId = restaurantId;
         this.comment = comment;
         this.items = items;
@@ -45,5 +45,9 @@ public class NewOrder {
 
     public void setAddress(Integer address) {
         this.address = address;
+    }
+
+    public String toString() {
+        return "NewOrder { restaurantID: " + this.restaurantId + " comment: " + this.comment + " address: " + this.address + " }";
     }
 }

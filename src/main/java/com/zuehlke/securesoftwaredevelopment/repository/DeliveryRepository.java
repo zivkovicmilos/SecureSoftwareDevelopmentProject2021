@@ -27,9 +27,7 @@ public class DeliveryRepository {
         List<ViewableDelivery> deliveries = new ArrayList<>();
         String sqlQuery = "SELECT d.id, d.isDone, d.date, d.comment, u.username, r.name, rt.name, a.name FROM delivery AS d JOIN users AS u ON d.userId = u.id JOIN restaurant as r ON d.restaurantId = r.id JOIN address AS a ON d.addressId = a.id JOIN restaurant_type AS rt ON r.typeId= rt.id";
 
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sqlQuery)) {
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sqlQuery)) {
 
             while (rs.next()) {
                 deliveries.add(createDelivery(rs));
@@ -57,10 +55,7 @@ public class DeliveryRepository {
     public ViewableDelivery getDelivery(String id) {
         String sqlQuery = "SELECT d.id, d.isDone, d.date, d.comment, u.username, r.name, rt.name, a.name FROM delivery AS d JOIN users AS u ON d.userId = u.id JOIN restaurant as r ON d.restaurantId = r.id JOIN address AS a ON d.addressId = a.id JOIN restaurant_type AS rt ON r.typeId= rt.id WHERE d.id = " + id;
 
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sqlQuery)) {
-
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sqlQuery)) {
             if (rs.next()) {
                 return createDelivery(rs);
             }
@@ -75,10 +70,7 @@ public class DeliveryRepository {
         List<DeliveryDetail> details = new ArrayList<>();
         String sqlQuery = "SELECT di.id, di.amount, f.name, f.price FROM delivery_item AS di JOIN food AS f ON di.foodId = f.id WHERE deliveryId = " + id;
 
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sqlQuery)) {
-
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sqlQuery)) {
             while (rs.next()) {
                 details.add(createDetail(rs));
             }
@@ -98,8 +90,11 @@ public class DeliveryRepository {
         int amount = rs.getInt(2);
         String foodName = rs.getString(3);
         int price = rs.getInt(4);
+        DeliveryDetail detail = new DeliveryDetail(id, amount, foodName, price);
 
-        return new DeliveryDetail(id, amount, foodName, price);
+        auditLogger.audit("Created new delivery detail with ID: " + id);
+
+        return detail;
     }
 
     public int calculateSum(List<DeliveryDetail> details) {
@@ -114,16 +109,8 @@ public class DeliveryRepository {
 
     public List<ViewableDelivery> search(String searchQuery) throws SQLException {
         List<ViewableDelivery> deliveries = new ArrayList<>();
-        String sqlQuery =
-                "SELECT d.id, d.isDone, d.date, d.comment, u.username, r.name, rt.name, a.name FROM delivery AS d JOIN users AS u ON d.userId = u.id JOIN restaurant as r ON d.restaurantId = r.id JOIN address AS a ON d.addressId = a.id JOIN restaurant_type AS rt ON r.typeId= rt.id" +
-                        " WHERE UPPER(d.comment) LIKE UPPER('%" + searchQuery + "%')"
-                        + "OR UPPER(u.username) LIKE UPPER('%" + searchQuery + "%')"
-                        + "OR UPPER(r.name) LIKE UPPER('%" + searchQuery + "%')"
-                        + "OR UPPER(rt.name) LIKE UPPER('%" + searchQuery + "%')"
-                        + "OR UPPER(a.name) LIKE UPPER('%" + searchQuery + "%')";
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sqlQuery)) {
+        String sqlQuery = "SELECT d.id, d.isDone, d.date, d.comment, u.username, r.name, rt.name, a.name FROM delivery AS d JOIN users AS u ON d.userId = u.id JOIN restaurant as r ON d.restaurantId = r.id JOIN address AS a ON d.addressId = a.id JOIN restaurant_type AS rt ON r.typeId= rt.id" + " WHERE UPPER(d.comment) LIKE UPPER('%" + searchQuery + "%')" + "OR UPPER(u.username) LIKE UPPER('%" + searchQuery + "%')" + "OR UPPER(r.name) LIKE UPPER('%" + searchQuery + "%')" + "OR UPPER(rt.name) LIKE UPPER('%" + searchQuery + "%')" + "OR UPPER(a.name) LIKE UPPER('%" + searchQuery + "%')";
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sqlQuery)) {
             while (rs.next()) {
                 deliveries.add(createDelivery(rs));
             }
@@ -131,7 +118,7 @@ public class DeliveryRepository {
             LOG.error("Unable to execute search", e);
         }
 
-        LOG.info("Found " + deliveries.size() + " results for query: " + searchQuery);
+        auditLogger.audit("Found " + deliveries.size() + " results for query: " + searchQuery);
 
         return deliveries;
     }

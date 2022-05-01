@@ -28,9 +28,7 @@ public class OrderRepository {
         List<Food> menu = new ArrayList<>();
         String sqlQuery = "SELECT id, name FROM food WHERE restaurantId=" + id;
 
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sqlQuery)) {
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sqlQuery)) {
             while (rs.next()) {
                 menu.add(createFood(rs));
             }
@@ -44,14 +42,16 @@ public class OrderRepository {
     private Food createFood(ResultSet rs) throws SQLException {
         int id = rs.getInt(1);
         String name = rs.getString(2);
-        return new Food(id, name);
+        Food food = new Food(id, name);
+
+        auditLogger.audit("Created new food with ID: " + id);
+
+        return food;
     }
 
     public void insertNewOrder(NewOrder newOrder, int userId) {
         LocalDate date = LocalDate.now();
-        String sqlQuery = "INSERT INTO delivery (isDone, userId, restaurantId, addressId, date, comment)" +
-                "values (FALSE, " + userId + ", ?, ?, " +
-                "'" + date.getYear() + "-" + date.getMonthValue() + "-" + date.getDayOfMonth() + "', ?)";
+        String sqlQuery = "INSERT INTO delivery (isDone, userId, restaurantId, addressId, date, comment)" + "values (FALSE, " + userId + ", ?, ?, " + "'" + date.getYear() + "-" + date.getMonthValue() + "-" + date.getDayOfMonth() + "', ?)";
         try {
             Connection connection = dataSource.getConnection();
 
@@ -63,14 +63,15 @@ public class OrderRepository {
 
             preparedStatement.executeUpdate();
 
+            auditLogger.audit("order.create: " + newOrder.toString());
+
             sqlQuery = "SELECT MAX(id) FROM delivery";
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(sqlQuery);
 
             if (rs.next()) {
                 int deliveryId = rs.getInt(1);
-                sqlQuery = "INSERT INTO delivery_item (amount, foodId, deliveryId)" +
-                        "values";
+                sqlQuery = "INSERT INTO delivery_item (amount, foodId, deliveryId)" + "values";
                 for (int i = 0; i < newOrder.getItems().length; i++) {
                     FoodItem item = newOrder.getItems()[i];
                     String deliveryItem = "";
@@ -91,9 +92,7 @@ public class OrderRepository {
     public Object getAddresses(int userId) {
         List<Address> addresses = new ArrayList<>();
         String sqlQuery = "SELECT id, name FROM address WHERE userId=" + userId;
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sqlQuery)) {
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sqlQuery)) {
             while (rs.next()) {
                 addresses.add(createAddress(rs));
             }
@@ -108,6 +107,10 @@ public class OrderRepository {
         int id = rs.getInt(1);
         String name = rs.getString(2);
 
-        return new Address(id, name);
+        Address address = new Address(id, name);
+
+        auditLogger.audit("Created new address with ID: " + id);
+
+        return address;
     }
 }

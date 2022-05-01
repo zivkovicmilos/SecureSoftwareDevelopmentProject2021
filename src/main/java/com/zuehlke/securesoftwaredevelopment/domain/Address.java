@@ -24,5 +24,9 @@ public class Address {
         this.name = name;
         this.id = id;
     }
+
+    public String toString() {
+        return "Address { id: " + this.id + " name: " + this.name + " }";
+    }
 }
 

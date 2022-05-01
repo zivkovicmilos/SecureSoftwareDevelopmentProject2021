@@ -45,5 +45,9 @@ public class Delivery {
     public void setRestaurantId(Integer restaurantId) {
         this.restaurantId = restaurantId;
     }
+
+    public String toString() {
+        return "Delivery { id: " + this.id + " done: " + this.isDone + " userID: " + this.userId + " restaurantID: " + this.restaurantId + " }";
+    }
 }
 

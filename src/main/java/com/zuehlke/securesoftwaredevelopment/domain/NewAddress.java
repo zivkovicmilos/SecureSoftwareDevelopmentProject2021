@@ -24,4 +24,8 @@ public class NewAddress {
     public void setUserId(int userId) {
         this.userId = userId;
     }
+
+    public String toString() {
+        return "Address { userID: " + this.userId + " name: " + this.name + " }";
+    }
 }

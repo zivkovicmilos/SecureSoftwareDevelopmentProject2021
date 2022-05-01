@@ -24,4 +24,8 @@ public class FoodItem {
     public void setFoodId(Integer foodId) {
         this.foodId = foodId;
     }
+
+    public String toString() {
+        return "FoodItem { amount: " + this.amount + " foodID: " + this.foodId + " }";
+    }
 }

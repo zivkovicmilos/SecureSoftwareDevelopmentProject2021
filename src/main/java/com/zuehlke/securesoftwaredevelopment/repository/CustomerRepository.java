@@ -1,6 +1,7 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
 import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
+import com.zuehlke.securesoftwaredevelopment.config.Entity;
 import com.zuehlke.securesoftwaredevelopment.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,8 @@ public class CustomerRepository {
             String address = rs.getString(5);
 
             person = new Person(id, firstName, lastName, personalNumber, address);
+
+            auditLogger.auditChange(new Entity("person.create", String.valueOf(id), "", person.toString()));
         } catch (SQLException e) {
             LOG.error("Unable to create new person", e);
         }
@@ -114,7 +117,7 @@ public class CustomerRepository {
             if (updated < 1) {
                 LOG.warn("Unable to delete restaurant with ID " + id);
             } else {
-                // TODO audit
+                auditLogger.audit("Restaurant with ID: " + id + " deleted");
             }
         } catch (SQLException e) {
             LOG.error("Unable to delete restaurant with ID " + id, e);
@@ -126,12 +129,14 @@ public class CustomerRepository {
         int updated = 0;
 
         try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            Restaurant oldRestaurantData = (Restaurant) getRestaurant(String.valueOf(restaurantUpdate.getId()));
+
             updated = statement.executeUpdate(query);
 
             if (updated < 1) {
                 LOG.warn("Attempted to update non-existing restaurant with ID " + restaurantUpdate.getId());
             } else {
-                // TODO audit
+                auditLogger.auditChange(new Entity("restaurant.update", String.valueOf(restaurantUpdate.getId()), oldRestaurantData.toString(), restaurantUpdate.toString()));
             }
         } catch (SQLException e) {
             LOG.error("Unable to execute restaurant update with ID " + restaurantUpdate.getId(), e);
@@ -159,7 +164,7 @@ public class CustomerRepository {
             String password = rs.getString(3);
 
             newCustomer = new Customer(id, username, password);
-            // TODO audit
+            auditLogger.audit("Created a new user with username: " + username + " and ID: " + id);
         } catch (SQLException e) {
             LOG.error("Unable to create customer", e);
         }
@@ -177,7 +182,7 @@ public class CustomerRepository {
             if (updated < 1) {
                 LOG.warn("Attempted to delete an unknown user with ID: " + id);
             } else {
-                // TODO audit
+                auditLogger.audit("Deleted custoemr with ID: " + id);
             }
         } catch (SQLException e) {
             LOG.error("Unable to delete customer with ID: " + id, e);
@@ -189,12 +194,14 @@ public class CustomerRepository {
         int updated = 0;
 
         try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            Customer oldCustomerData = getCustomer(String.valueOf(customerUpdate.getId()));
+
             updated = statement.executeUpdate(query);
 
             if (updated < 1) {
                 LOG.warn("Attempted to update an unknown customer with ID: " + customerUpdate.getId() + " username: " + customerUpdate.getUsername());
             } else {
-                // TODO audit
+                auditLogger.auditChange(new Entity("customer.update", String.valueOf(oldCustomerData.getId()), oldCustomerData.toString(), customerUpdate.toString()));
             }
         } catch (SQLException e) {
             LOG.error("Unable to update customer with ID: " + customerUpdate.getId(), e);
@@ -212,10 +219,6 @@ public class CustomerRepository {
             LOG.error("Unable to fetch addresses for user with ID: " + id);
         }
 
-        if (addresses.size() < 1) {
-            // TODO audit
-        }
-
         return addresses;
     }
 
@@ -226,6 +229,7 @@ public class CustomerRepository {
             String name = rs.getString(2);
 
             address = new Address(id, name);
+            auditLogger.audit("Created a new address: " + address.toString());
         } catch (SQLException e) {
             LOG.error("Unable to create address for user", e);
         }
@@ -243,7 +247,7 @@ public class CustomerRepository {
             if (updated < 1) {
                 LOG.warn("Attempted to delete an unknown address with ID: " + id);
             } else {
-                // TODO audit
+                auditLogger.audit("Deleted address with ID: " + id);
             }
         } catch (SQLException e) {
             LOG.error("Unable to delete address with ID: " + id, e);
@@ -260,7 +264,7 @@ public class CustomerRepository {
             if (updated < 1) {
                 LOG.warn("Attempted to update an unknown address with ID: " + address.getId());
             } else {
-                // TODO audit
+                auditLogger.audit("Updated address with ID: " + address.getId() + ", " + address.getName());
             }
         } catch (SQLException e) {
             LOG.error("Unable to update customer address with ID: " + address.getId(), e);
@@ -277,7 +281,7 @@ public class CustomerRepository {
             if (updated < 1) {
                 LOG.warn("Attempted to add a new address: " + newAddress.getName() + " userID: " + newAddress.getUserId());
             } else {
-                // TODO audit
+                auditLogger.audit("Added new address: " + newAddress.getName());
             }
         } catch (SQLException e) {
             LOG.error("Unable to add new address: " + newAddress.getName() + " for userID: " + newAddress.getUserId(), e);

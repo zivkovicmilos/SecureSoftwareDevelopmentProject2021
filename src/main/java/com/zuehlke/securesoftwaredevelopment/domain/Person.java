@@ -54,4 +54,8 @@ public class Person {
     public void setAddress(String streetNumber) {
         this.address = streetNumber;
     }
+
+    public String toString() {
+        return "Person { id: " + this.id + " firstName: " + this.firstName + " lastName: " + this.lastName + " personalNumber: " + this.personalNumber + " address: " + this.address + " }";
+    }
 }

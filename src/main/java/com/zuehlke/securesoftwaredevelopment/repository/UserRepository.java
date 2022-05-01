@@ -26,9 +26,7 @@ public class UserRepository {
 
     public User findUser(String username) {
         String query = "SELECT id, username, password FROM users WHERE username='" + username + "'";
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(query)) {
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(query)) {
             if (rs.next()) {
                 int id = rs.getInt(1);
                 String username1 = rs.getString(2);
@@ -44,13 +42,19 @@ public class UserRepository {
 
     public boolean validCredentials(String username, String password) {
         String query = "SELECT username FROM users WHERE username='" + username + "' AND password='" + password + "'";
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(query)) {
-            return rs.next();
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(query)) {
+            boolean loggedIn = rs.next();
+
+            if (loggedIn) {
+                auditLogger.audit("Logged in user with username: " + username);
+            }
+
+            return loggedIn;
         } catch (SQLException e) {
             LOG.error("Unable to validate credentials for username: " + username, e);
         }
+
+        auditLogger.audit("Invalid credentials for username: " + username);
 
         return false;
     }
@@ -58,15 +62,13 @@ public class UserRepository {
     public void delete(int userId) {
         String query = "DELETE FROM users WHERE id = " + userId;
         int updated = 0;
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-        ) {
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement();) {
             updated = statement.executeUpdate(query);
 
             if (updated < 1) {
                 LOG.warn("Attempted to delete non-existing user with ID: " + userId);
             } else {
-                // TODO audit
+                auditLogger.audit("users.delete: Deleted user with ID " + userId);
             }
         } catch (SQLException e) {
             LOG.error("Unable to delete user with ID: " + userId, e);

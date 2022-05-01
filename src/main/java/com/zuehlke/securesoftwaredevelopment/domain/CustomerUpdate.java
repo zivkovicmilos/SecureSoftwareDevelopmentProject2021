@@ -34,4 +34,8 @@ public class CustomerUpdate {
     public void setId(int id) {
         this.id = id;
     }
+
+    public String toString() {
+        return "Customer { id: " + this.id + " username: " + this.username + " }";
+    }
 }

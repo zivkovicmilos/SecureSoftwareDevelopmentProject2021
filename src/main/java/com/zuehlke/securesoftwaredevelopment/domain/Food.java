@@ -24,4 +24,8 @@ public class Food {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String toString() {
+        return "Food { id: " + this.id + " name: " + this.name + " }";
+    }
 }

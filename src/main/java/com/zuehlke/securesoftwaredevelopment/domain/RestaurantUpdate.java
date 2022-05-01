@@ -44,4 +44,8 @@ public class RestaurantUpdate {
     public void setRestaurantType(int restaurantType) {
         this.restaurantType = restaurantType;
     }
+
+    public String toString() {
+        return "Restaurant { id: " + this.id + " name: " + this.name + " address: " + this.address + " type: " + this.restaurantType + " }";
+    }
 }

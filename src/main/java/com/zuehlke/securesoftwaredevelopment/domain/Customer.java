@@ -39,4 +39,8 @@ public class Customer {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String toString() {
+        return "Customer { id: " + this.id + " username: " + this.username + " }";
+    }
 }

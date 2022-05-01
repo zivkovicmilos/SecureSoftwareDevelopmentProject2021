@@ -45,4 +45,8 @@ public class DeliveryDetail {
         this.price = price;
     }
 
+    public String toString() {
+        return "DeliveryDetail { id: " + this.id + " amount: " + this.amount + " foodName: " + this.foodName + " price: " + this.price + " }";
+    }
+
 }
