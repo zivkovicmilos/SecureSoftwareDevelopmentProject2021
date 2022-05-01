@@ -1,6 +1,9 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
+import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
 import com.zuehlke.securesoftwaredevelopment.domain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -13,6 +16,8 @@ import java.util.List;
 public class OrderRepository {
 
     private DataSource dataSource;
+    private static final Logger LOG = LoggerFactory.getLogger(OrderRepository.class);
+    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(OrderRepository.class);
 
     public OrderRepository(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -22,15 +27,15 @@ public class OrderRepository {
     public List<Food> getMenu(int id) {
         List<Food> menu = new ArrayList<>();
         String sqlQuery = "SELECT id, name FROM food WHERE restaurantId=" + id;
+
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery(sqlQuery)) {
             while (rs.next()) {
                 menu.add(createFood(rs));
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to fetch menu for restaurant with ID: " + id);
         }
 
         return menu;
@@ -63,7 +68,6 @@ public class OrderRepository {
             ResultSet rs = statement.executeQuery(sqlQuery);
 
             if (rs.next()) {
-
                 int deliveryId = rs.getInt(1);
                 sqlQuery = "INSERT INTO delivery_item (amount, foodId, deliveryId)" +
                         "values";
@@ -79,12 +83,9 @@ public class OrderRepository {
                 System.out.println(sqlQuery);
                 statement.executeUpdate(sqlQuery);
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to insert new order", e);
         }
-
-
     }
 
     public Object getAddresses(int userId) {
@@ -96,17 +97,17 @@ public class OrderRepository {
             while (rs.next()) {
                 addresses.add(createAddress(rs));
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to get addresses for user with ID: " + userId, e);
         }
+
         return addresses;
     }
 
     private Address createAddress(ResultSet rs) throws SQLException {
         int id = rs.getInt(1);
         String name = rs.getString(2);
-        return new Address(id, name);
 
+        return new Address(id, name);
     }
 }

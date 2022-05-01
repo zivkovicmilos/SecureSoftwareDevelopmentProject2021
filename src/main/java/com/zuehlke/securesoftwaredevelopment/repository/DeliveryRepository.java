@@ -1,7 +1,10 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
+import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
 import com.zuehlke.securesoftwaredevelopment.domain.DeliveryDetail;
 import com.zuehlke.securesoftwaredevelopment.domain.ViewableDelivery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -12,6 +15,9 @@ import java.util.List;
 @Repository
 public class DeliveryRepository {
     private DataSource dataSource;
+
+    private static final Logger LOG = LoggerFactory.getLogger(DeliveryRepository.class);
+    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(DeliveryRepository.class);
 
     public DeliveryRepository(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -28,10 +34,10 @@ public class DeliveryRepository {
             while (rs.next()) {
                 deliveries.add(createDelivery(rs));
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to execute delivery search", e);
         }
+
         return deliveries;
     }
 
@@ -58,10 +64,10 @@ public class DeliveryRepository {
             if (rs.next()) {
                 return createDelivery(rs);
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to fetch delivery with ID: " + id, e);
         }
+
         return null;
     }
 
@@ -76,10 +82,13 @@ public class DeliveryRepository {
             while (rs.next()) {
                 details.add(createDetail(rs));
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to get delivery details for ID: " + id);
         }
+        if (details.size() < 1) {
+            LOG.warn("No delivery details found for ID: " + id);
+        }
+
         return details;
     }
 
@@ -91,20 +100,20 @@ public class DeliveryRepository {
         int price = rs.getInt(4);
 
         return new DeliveryDetail(id, amount, foodName, price);
-
     }
 
-    public int calculateSum(List<DeliveryDetail> details){
+    public int calculateSum(List<DeliveryDetail> details) {
         int sum = 0;
-        for(DeliveryDetail detail: details){
-            sum+= detail.getPrice() * detail.getAmount();
+        for (DeliveryDetail detail : details) {
+            sum += detail.getPrice() * detail.getAmount();
         }
+
         return sum;
     }
 
 
     public List<ViewableDelivery> search(String searchQuery) throws SQLException {
-        List<ViewableDelivery> cars = new ArrayList<>();
+        List<ViewableDelivery> deliveries = new ArrayList<>();
         String sqlQuery =
                 "SELECT d.id, d.isDone, d.date, d.comment, u.username, r.name, rt.name, a.name FROM delivery AS d JOIN users AS u ON d.userId = u.id JOIN restaurant as r ON d.restaurantId = r.id JOIN address AS a ON d.addressId = a.id JOIN restaurant_type AS rt ON r.typeId= rt.id" +
                         " WHERE UPPER(d.comment) LIKE UPPER('%" + searchQuery + "%')"
@@ -116,10 +125,15 @@ public class DeliveryRepository {
              Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery(sqlQuery)) {
             while (rs.next()) {
-                cars.add(createDelivery(rs));
+                deliveries.add(createDelivery(rs));
             }
+        } catch (Exception e) {
+            LOG.error("Unable to execute search", e);
         }
-        return cars;
+
+        LOG.info("Found " + deliveries.size() + " results for query: " + searchQuery);
+
+        return deliveries;
     }
 
 }

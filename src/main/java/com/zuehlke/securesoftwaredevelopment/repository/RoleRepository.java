@@ -1,5 +1,6 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
+import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
 import com.zuehlke.securesoftwaredevelopment.domain.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import java.util.List;
 public class RoleRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(RoleRepository.class);
+    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(RoleRepository.class);
 
     private final DataSource dataSource;
 
@@ -36,8 +38,9 @@ public class RoleRepository {
                 roles.add(new Role(id, name));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to find user with ID: " + userId, e);
         }
+
         return roles;
     }
 }

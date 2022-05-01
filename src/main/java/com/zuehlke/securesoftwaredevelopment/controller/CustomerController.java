@@ -34,7 +34,6 @@ public class CustomerController {
 
     @GetMapping("/customers-and-restaurants")
     public String customersAndRestaurants(Model model) {
-
         // Append users if there are correct permissions
         if (SecurityUtil.hasPermission("USERS_LIST_VIEW")) {
             model.addAttribute("customers", customerRepository.getCustomers());

@@ -1,5 +1,6 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
+import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
 import com.zuehlke.securesoftwaredevelopment.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import java.sql.Statement;
 public class UserRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserRepository.class);
+    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(UserRepository.class);
 
     private DataSource dataSource;
 
@@ -34,8 +36,9 @@ public class UserRepository {
                 return new User(id, username1, password);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to find user with username: " + username, e);
         }
+
         return null;
     }
 
@@ -46,19 +49,27 @@ public class UserRepository {
              ResultSet rs = statement.executeQuery(query)) {
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to validate credentials for username: " + username, e);
         }
+
         return false;
     }
 
     public void delete(int userId) {
         String query = "DELETE FROM users WHERE id = " + userId;
+        int updated = 0;
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
         ) {
-            statement.executeUpdate(query);
+            updated = statement.executeUpdate(query);
+
+            if (updated < 1) {
+                LOG.warn("Attempted to delete non-existing user with ID: " + userId);
+            } else {
+                // TODO audit
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Unable to delete user with ID: " + userId, e);
         }
     }
 }
